@@ -2,7 +2,6 @@ use clap::{App, Arg};
 use sled::{open, IVec};
 
 fn main() {
-    //Has a lot a work to do
     let matches = App::new("CFS Geez")
         .version("0.1")
         .author("Nithsua <nivasmuthu452@gmail.com>")
