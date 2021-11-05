@@ -2,11 +2,11 @@ use clap::{App, Arg};
 use sled::{open, IVec};
 
 fn main() {
-    //Has a lot a work to do
     let matches = App::new("CFS Geez")
         .version("0.1")
-        .author("Nithsua <nivasmuthu452@gmail.com>")
-        .about("Cryptographic File System for your text files")
+        // .author("Nithsua <nivasmuthu452@gmail.com>")
+        .author("Nithsua")
+        .about("Cryptographic File System for your text files\nContainerized simple file system based on HashMap for your text files")
         .arg(
             Arg::with_name("encrypt")
                 .short("c")
@@ -57,27 +57,34 @@ fn main() {
     match option {
         "encrypt" => {
             println!("path: {}\nkey: {}\nEncryption", path, key);
-            encrypt(path, key);
+            match encrypt(path, key) {
+                Ok(()) => println!("encryption done"),
+                Err(err) => println!("{}", err),
+            }
         }
         "decrypt" => {
             println!("path: {}\nkey: {}\nDecryption", path, key);
-            decrypt(path, key);
+            match decrypt(path, key) {
+                Ok(()) => println!("Decryption done"),
+                Err(err) => println!("{}", err),
+            }
         }
-        "delete" => {
-            delete_from_local_store(key);
-        }
+        "delete" => match delete_from_local_store(key) {
+            Ok(()) => println!("Deleted Successfully"),
+            Err(err) => println!("{}", err),
+        },
         _ => {}
     }
 }
 
 fn encrypt<'a>(file_path: &'a str, key: &str) -> Result<(), &'a str> {
     if key_exists(key) {
-        return Err("Key Exists");
+        return Err("Key Already Exists");
     }
 
     match std::fs::read_to_string(file_path) {
         Ok(content) => {
-            add_to_local_store(key, content);
+            add_to_local_store(key, content).unwrap();
             Ok(())
         }
         Err(_) => Err("Unable to open the file, file not available or not enough permission"),
@@ -85,9 +92,12 @@ fn encrypt<'a>(file_path: &'a str, key: &str) -> Result<(), &'a str> {
 }
 
 fn decrypt<'a>(file_path: &'a str, key: &str) -> Result<(), &'a str> {
+    if !key_exists(key) {
+        return Err("Key doesn't exists");
+    }
     let content = read_from_local_store(key);
     println!("{} {}", content, file_path);
-    std::fs::write(file_path, content);
+    std::fs::write(file_path, content).unwrap();
     Ok(())
 }
 
